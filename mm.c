@@ -25,7 +25,7 @@ typedef struct header {
 
 //it means that p will point to n and n will keep the free flag unchanged
 //if p->next is free, then n will be also free
-#define SET_NEXT(p,n)  p->next = (void *)(((uintptr_t) n & ~0x1) | ((uintptr_t) p->next & 0x1)) /* TODO: Preserve free flag */
+#define SET_NEXT(p,n)  p->next = (void *)(((uintptr_t) (n)) | ((uintptr_t) p->next & 0x1)) /* TODO: Preserve free flag */
 
 //will return 1, indicating that the block is free
 #define GET_FREE(p)    (uint8_t) ( (uintptr_t) (p->next) & 0x1 )   /* OK -- do not change */
@@ -34,7 +34,6 @@ typedef struct header {
 //f is the flag(should be 1 or 0). We do (f & ~0x1) to ensure that only the least bit of f is used when setting flag
 //(p->next) & ~0x1 - we mask out the free bit of p->next to get the address/the same format no matter block is free or not
 #define SET_FREE(p,f)  p->next = (void *) ( ((uintptr_t) (p->next) & ~0x1)|((uintptr_t)(f) & 0x1)) /* TODO: Set free bit of p->next to f */
-
 
 //We find the size of the user data block by subtracting the address of the next block from the address of the current block
 // and subtracting the size of the header.
@@ -55,8 +54,9 @@ void simple_init() {
     size_t alignment = 8;
     // We add alignment-1 (7 = 0111) to our start and end addresses to ensure that they will be able to be 8 byte aligned
     // We then use the and operation, to compare them with the negation of 7 (1000 = 8) and find the 8 byte aligned address they need
-    uintptr_t aligned_memory_start = (memory_start + (alignment-1)) & ~(alignment - 1);  /* TODO: Alignment */
-    uintptr_t aligned_memory_end   = (memory_end + (alignment-1)) & ~(alignment - 1); /* TODO: Alignment */
+    uintptr_t aligned_memory_start = (((uintptr_t)memory_start + 7)/8)*8;  /* TODO: Alignment */
+    uintptr_t aligned_memory_end   = (((uintptr_t)memory_end-1)/8)*8; /* TODO: Alignment */
+    printf("Aligned memory start: %p, end: %p\n", (void*)aligned_memory_start, (void*)aligned_memory_end);
     BlockHeader * last;
 
     /* Already initialized ? */
@@ -70,6 +70,7 @@ void simple_init() {
             last = (BlockHeader *)aligned_memory_end;
             SET_NEXT(first,last);
             SET_FREE(first,1);
+            SET_NEXT(last, first);
             SET_FREE(last, 0);
         }
         current = first;
@@ -94,15 +95,18 @@ void* simple_malloc(size_t size) {
         if (first == NULL) return NULL;
     }
 
-    size_t aligned_size = (size + (MIN_SIZE - 1)) & ~(MIN_SIZE - 1);  /* TODO: Alignment */
+    size_t aligned_size = (size + (MIN_SIZE - 1)) / MIN_SIZE * MIN_SIZE;  /* TODO: Alignment */
 
     /* Search for a free block */
     BlockHeader * search_start = current;
+    printf("Allocating block of size %lu bytes\n", aligned_size);
+    printf("Current block address: %p\n", (void*)current);
     do {
 
         if (GET_FREE(current)) {
 
             /* Possibly coalesce consecutive free blocks here */
+
 
             /* Check if free block is large enough */
             if (SIZE(current) >= aligned_size) {

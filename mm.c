@@ -106,6 +106,13 @@ void* simple_malloc(size_t size) {
         if (GET_FREE(current)) {
 
             /* Possibly coalesce consecutive free blocks here */
+            BlockHeader * next_block = GET_NEXT(current);
+            while (GET_FREE(next_block)) {
+                // We connect the current block with the next block, without is free flag
+                SET_NEXT(current, GET_NEXT(next_block));
+                // We set next_block to be the merged block
+                next_block = GET_NEXT(current);
+            }
 
 
             /* Check if free block is large enough */

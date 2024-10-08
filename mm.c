@@ -33,7 +33,7 @@ typedef struct header {
 //Here we set the flag of the block to be free 1 or allocated 0
 //f is the flag(should be 1 or 0). We do (f & ~0x1) to ensure that only the least bit of f is used when setting flag
 //(p->next) & ~0x1 - we mask out the free bit of p->next to get the address/the same format no matter block is free or not
-#define SET_FREE(p,f)  p->next = (void *) ( ((uintptr_t) (p->next) & ~0x1)|((uintptr_t)(f) & ~0x1)) /* TODO: Set free bit of p->next to f */
+#define SET_FREE(p,f)  p->next = (void *) ( ((uintptr_t) (p->next) & ~0x1)|((uintptr_t)(f) & 0x1)) /* TODO: Set free bit of p->next to f */
 
 
 //We find the size of the user data block by subtracting the address of the next block from the address of the current block
@@ -68,9 +68,9 @@ void simple_init() {
             //TODO: Place first and last blocks and set links and free flags properly
             first = (BlockHeader *)aligned_memory_start;
             last = (BlockHeader *)aligned_memory_end;
+            SET_NEXT(first,last);
             SET_FREE(first,1);
-            SET_NEXT(last,0);
-            SET_FREE(last, NULL);
+            SET_FREE(last, 0);
         }
         current = first;
     }

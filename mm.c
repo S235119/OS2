@@ -113,7 +113,7 @@ void* simple_malloc(size_t size) {
                 } else {
                     /* TODO: Carve aligned_size from block and allocate new free block for the rest */
                     //make a new block that will have the size of aligned_size
-                    BlockHeader *new_block = (BlockHeader *) ((char *)current + sizeof(BlockHeader))+aligned_size;
+                    BlockHeader *new_block = (BlockHeader *) ((uintptr_t)current + sizeof(BlockHeader)+aligned_size);
                     // new block point to the next from curent
                     SET_NEXT(new_block, GET_NEXT(current));
                     SET_FREE(new_block, 1);
@@ -146,7 +146,7 @@ void* simple_malloc(size_t size) {
  */
 void simple_free(void * ptr) {
     //
-    BlockHeader * block = ptr - sizeof(BlockHeader); /* TODO: Find block corresponding to ptr */
+    BlockHeader * block = (void *)((uintptr_t)ptr - sizeof(BlockHeader)); /* TODO: Find block corresponding to ptr */
     if (GET_FREE(block)) {
         /* Block is not in use -- probably an error */
         return;

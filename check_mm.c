@@ -283,21 +283,21 @@ START_TEST(task_two_firstfit)
 {
     void *block1, *block2, *block3, *block4;
 
-    // Step 1: Allocate three blocks
+    // Allocate 3 blocks
     block1 = MALLOC(100);
     block2 = MALLOC(200);
     block3 = MALLOC(300);
 
-    // Step 2: Free the first block to create a free space of 100 bytes
+    // Free up the first, so we can check for first fit
     FREE(block1);
 
-    // Step 3: Allocate a new block of 50 bytes
+    // Allocate a new block, with a size of 50 bytes
     block4 = MALLOC(50);
 
     // If our allocator is not first-fit, block4 should not be at the same location as block1
     ck_assert_msg(block4 != block1, "First-fit strategy.");
 
-    // Cleanup: Free all the blocks we used
+    // Free all the blocks we used
     FREE(block2);
     FREE(block3);
     FREE(block4);

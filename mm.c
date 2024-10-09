@@ -56,7 +56,6 @@ void simple_init() {
     // We then use the and operation, to compare them with the negation of 7 (1000 = 8) and find the 8 byte aligned address they need
     uintptr_t aligned_memory_start = (((uintptr_t)memory_start + 7)/8)*8;  /* TODO: Alignment */
     uintptr_t aligned_memory_end   = (((uintptr_t)memory_end-1)/8)*8; /* TODO: Alignment */
-    printf("Aligned memory start: %p, end: %p\n", (void*)aligned_memory_start, (void*)aligned_memory_end);
     BlockHeader * last;
 
     /* Already initialized ? */
@@ -99,8 +98,6 @@ void* simple_malloc(size_t size) {
 
     /* Search for a free block */
     BlockHeader * search_start = current;
-    printf("Allocating block of size %lu bytes\n", aligned_size);
-    printf("Current block address: %p\n", (void*)current);
     do {
 
         if (GET_FREE(current)) {
